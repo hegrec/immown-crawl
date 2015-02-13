@@ -1,2 +1,4 @@
-var app = require("./app/main");
+var ImmoCrawl = require("./app/main"),
+    app = new ImmoCrawl();
+
 app.start();

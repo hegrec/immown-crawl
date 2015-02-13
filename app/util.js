@@ -1,3 +1,7 @@
+var env = require("./env"),
+    _ = require('lodash'),
+    api = require('immodispo-api-client');
+
 function _guid() {
     function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)
@@ -8,41 +12,46 @@ function _guid() {
         s4() + '-' + s4() + s4() + s4();
 }
 
-
-function mysql_real_escape_string (str) {
-    return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
-        switch (char) {
-            case "\0":
-                return "\\0";
-            case "\x08":
-                return "\\b";
-            case "\x09":
-                return "\\t";
-            case "\x1a":
-                return "\\z";
-            case "\n":
-                return "\\n";
-            case "\r":
-                return "\\r";
-            case "\"":
-            case "'":
-            case "\\":
-            case "%":
-                return "\\"+char; // prepends a backslash to backslash, percent,
-            // and double/single quotes
+function findTownByName(name, cb) {
+    api.get(env.API_HOST + '/towns?filter=name=' + encodeURIComponent(name), function (err, items) {
+        if (err) {
+            return cb(err);
         }
-    });
+
+        if (items.body.length === 0) {
+            return cb(null, null);
+        }
+
+        cb(null, items.body[0]);
+    })
+}
+
+
+
+function findTownByPostcode(code, cb) {
+    api.get(env.API_HOST + '/towns?filter=code=' + Number(code), function (err, items) {
+        if (err) {
+            return cb(err);
+        }
+
+        if (items.body.length === 0) {
+            return cb(null, null);
+        }
+
+        cb(null, items.body[0]);
+    })
 }
 
 module.exports = {
     guid:_guid,
-    mysql_real_escape_string: mysql_real_escape_string,
-    getImagefileName: function (imageURL) {
+    findTownByName: findTownByName,
+    findTownByPostcode: findTownByPostcode,
+    getImageExtension: function (imageURL) {
         if (imageURL.indexOf(".png") > -1) {
-            return _guid() + ".png";
+            return ".png";
         } else if (imageURL.indexOf(".jpg") > -1) {
-            return _guid() + ".jpg";
+            return ".jpg";
         }
         return false;
     }
-}
+};

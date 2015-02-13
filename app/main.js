@@ -1,101 +1,94 @@
-var api = require('../lib/api');
-var Sources = [];
-var Towns = [];
+var api = require('immodispo-api-client'),
+    env = require('./env'),
+    _ = require('lodash'),
+    Logger = require('./logger');
+
+function ImmoCrawl() {
+    this.sources = [];
+    this.towns = [];
+    this.loggerObject = new Logger();
+    this.sourceProcessingIndex = {};
+}
 
 /**
  * Sources are added to the list here and processed, names match the filename of the module
  */
-function process_sources() {
+ImmoCrawl.prototype.run = function run() {
+    var self = this;
 
+    //this.sources.push("laforet");
+    this.sources.push("guyhoquet");
 
-    Sources.push("laforet");
-    //Sources.push("guyhoquet");
-
-    for (var i=0;i<Sources.length;i++) {
-        var source_name = Sources[i];
-        process_town_for_source(source_name);
-    }
-}
+    //fire off each source on an individual processing queue
+    _.each(this.sources, function(source) {
+        self.processTown(source);
+    });
+};
 
 /**
  * Process a town for a given source and move the pointer up to the next town for callback processing.
  * @param source_name
  */
-function process_town_for_source(source_name) {
+ImmoCrawl.prototype.processTown = function processTown(sourceName) {
+    var source = require("./scrapers/" + sourceName),
+        self = this;
 
-    var source = require("./scrapers/"+source_name);
-    source = new source(Models);
-    source.scrape(useWorkingTown(source_name),function() { process_town_for_source(source_name) });
+    source = new source(this.loggerObject);
+
+    //asyncronously recurse down the town queue
+    source.scrape(self.consumeTown(sourceName),function() {
+        self.processTown(sourceName);
+    });
 }
 
-
-var working_town_map = {};
 /**
  * Consumes the current town for processing with a given source name
  * @param source_name
  * @returns {*}
  */
-function useWorkingTown(source_name) {
-    if (!working_town_map[source_name]) {
-        working_town_map[source_name] = 0;
+ImmoCrawl.prototype.consumeTown = function consumeTown(sourceName) {
+    var processingIndex,
+        town;
+
+    if (!this.sourceProcessingIndex[sourceName]) {
+        this.sourceProcessingIndex[sourceName] = 0;
     }
-    var town = Towns[working_town_map[source_name]];
-    working_town_map[source_name] = working_town_map[source_name] + 1;
+
+    processingIndex = this.sourceProcessingIndex[sourceName];
+    town = Towns[processingIndex];
+    console.log("Processing " + town.name + " for " + sourceName);
+    //increment the current town pointer to process the next town when the current scrape yields
+    this.sourceProcessingIndex[sourceName] = this.sourceProcessingIndex[sourceName] + 1;
     return town;
 }
 
 /**
- * The app is initialized after connecting to the api
- * @param models
+ * Initiates the crawling process for all sources
  */
-function initialize(err, models) {
+ImmoCrawl.prototype.start = function start() {
+    var self = this;
 
-    var queryParams = {
-        sort: "-population",
-        limit: 100
-    };
+    console.log("Starting Node.js Crawler");
+
     //find the 100 most populous towns and order them randomly for processing
-    models.town.find(queryParams, function(err, biggestTowns) {
+    api.get(env.API_HOST + "/towns?sort=-population&limit=100", function(err, biggestTowns) {
+        var townQueue = [],
+            ndx;
 
         if (err) {
-            throw new Error(err);
+            logger.log("error", err);
         }
 
-        var townQueue = [];
+        biggestTowns = biggestTowns.body;
+
         while (biggestTowns.length>0) {
-            var ndx = Math.floor(Math.random() * biggestTowns.length);
+            ndx = Math.floor(Math.random() * biggestTowns.length);
             townQueue.push(biggestTowns.splice(ndx,1)[0]);
         }
         Towns = townQueue;
 
-
-        process_sources();
+        self.run();
     });
-    /*Models = models;
-
-
-    Models.Town.find(100,"population", function (err, data) {
-
-        var townQueue = [];
-        while (data.length>0) {
-            var ndx = Math.floor(Math.random() * data.length);
-            townQueue.push(data.splice(ndx,1)[0]);
-        }
-        Towns = townQueue;
-        process_sources();
-    })*/
 }
 
-
-
-function start() {
-    console.log("Starting Node.js Crawler");
-    api.connect(initialize);
-
-}
-
-module.exports = {
-
-    start: start
-
-};
+module.exports = ImmoCrawl;
