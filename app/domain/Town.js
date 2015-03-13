@@ -1,6 +1,6 @@
 var _ = require('lodash');
 
-function Town(server) {
+function Town() {
     var town = {};
 
     town.name = null;

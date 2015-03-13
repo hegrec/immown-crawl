@@ -1,6 +1,7 @@
 var env = require("./env"),
     _ = require('lodash'),
-    api = require('immodispo-api-client');
+    Api = require('immodispo-api-client'),
+    api = new Api(env.api.username, env.api.password);
 
 function _guid() {
     function s4() {

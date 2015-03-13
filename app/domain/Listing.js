@@ -1,12 +1,13 @@
-var _ = require('lodash');
+var _ = require('lodash'),
+    DomainAgency = require('./Agency');
 
-function Listing() {
+function DomainListing() {
     var listing = {};
 
     listing.description = null;
     listing.price = 0;
-    listing.num_rooms = null;
-    listing.num_bathrooms = null;
+    listing.num_rooms = 0;
+    listing.num_bathrooms = 0;
     listing.num_bedrooms = 0;
     listing.construction_type = 0;
     listing.listing_url = null;
@@ -19,10 +20,12 @@ function Listing() {
     listing.is_rental = false;
 
     listing.TownId = null;
-    listing.AgencyId = null;
+    listing.agency = new DomainAgency();
+    listing.images = [];
+    listing.details = {};
 
 
     return listing;
 }
 
-module.exports = Listing;
+module.exports = DomainListing;
