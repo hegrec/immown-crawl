@@ -13,7 +13,7 @@ function Application() {
     this.sources = {
         laforet: new LaForet(this.logger, this.tracker),
         guyhoquet: new GuyHoquet(this.logger, this.tracker)
-    };
+    }; 
 
     this.crawler = new Crawler(this.sources, this.logger, this.tracker);
     this.validator = new Validator(this.sources, this.logger, this.tracker);
