@@ -195,7 +195,6 @@ Scraper.prototype.handleListings = function () {
                     self.tracker.event('crawler', 'crawler.skipUrl', listingUrl, function(err) {
 
                     });
-                    self.logger.log('Listing ' + listingUrl + ' exists, moving on...');
                     cb(null, null);
                 }
             });

@@ -60,6 +60,7 @@ Application.prototype.crawl = function crawl() {
         } else {
 
             self.logger.log('info', 'Crawler finished all tasks... Shutting down.');
+            process.exit(0);
         }
     });
 };
