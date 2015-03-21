@@ -8,8 +8,8 @@ function Crawler(sources, logger, tracker) {
     this.logger = logger;
     this.tracker = tracker;
     this.towns = [];
-    this.LISTINGS_PER_DAY = 8000;
-    this.LISTINGS_MAX = 20000;
+    this.LISTINGS_PER_DAY = 50000;
+    this.LISTINGS_MAX = 100000;
     this.api = new Api(env.api.username, env.api.password);
 }
 
@@ -97,7 +97,7 @@ Crawler.prototype.processSource = function processTown(source, cb) {
 Crawler.prototype.crawl = function crawl(cb) {
 
     var self = this,
-        crawlCount = 1;
+        crawlCount = 10;
     self.callback = cb;
     this.tracker.event('crawler', 'crawler.start', function(err) {
 
