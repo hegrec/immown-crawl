@@ -104,7 +104,7 @@ Validator.prototype.fetchListingURLsForUpdate = function (sourceUrl, cb) {
     var self = this,
     onlyAfterDate = self.dateToAPIFormat(Date.now() - self.DAY_MILLISECONDS);
 
-    self.api.get(env.API_HOST + "/listings?sort=updatedAt&limit=1000&include=Agency,ListingImage,ListingDetail&filter=listing_url~>"
+    self.api.get(env.API_HOST + "/listings?sort=updatedAt&limit=50&include=Agency,ListingImage,ListingDetail&filter=listing_url~>"
         + sourceUrl
         + "&filter=updatedAt<"
         + encodeURIComponent(onlyAfterDate), function(err, listings) {
