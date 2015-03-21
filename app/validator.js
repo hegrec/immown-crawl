@@ -39,8 +39,8 @@ Validator.prototype.validate = function verifyData(next) {
 Validator.prototype.validateSource = function validateSource(source, cb) {
     var self = this;
     self.fetchListingURLsForUpdate(source.getURL(), function(err, gatheredListings) {
-        if (err) {
-            return cb(err, false);
+        if (gatheredListings === false) {
+            self.logger.log('error', 'fetchListingURLsForUpdate failed ' + source.getURL());
         } else if (gatheredListings.length === 0) {
             return cb(null, true);
         }
@@ -111,7 +111,7 @@ Validator.prototype.fetchListingURLsForUpdate = function (sourceUrl, cb) {
         var container = [];
 
         if (err) {
-            return cb(err, null);
+            return cb(null, false);
         }
 
         _.each(listings.body, function(listing) {
