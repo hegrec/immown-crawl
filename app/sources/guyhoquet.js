@@ -5,8 +5,8 @@ var api = require('immodispo-api-client'),
     util = require('./../util'),
     constants = require('./../constants');
 
-function GuyHoquet(logger, tracker) {
-    Base.call(this, logger, tracker);
+function GuyHoquet(logger, tracker, redis) {
+    Base.call(this, logger, tracker, redis);
     this.pages = 1;
 }
 
@@ -99,7 +99,7 @@ GuyHoquet.prototype.processListing = function (listingModel, $, url, rental, cal
     _.each(otherDetails, function(detail) {
         var key = detail.key.toLowerCase(),
             val = detail.value,
-            valNoSpace = val.replace(/\s/g,'');
+            valNoSpace = val.replace(/\s/g,'').replace('.', '').replace(/,[0-9]+/, '');
 
         if (key == "surface habitable" && valNoSpace.match("[0-9]+")) {
             listingModel.interior_size = valNoSpace.match("[0-9]+")[0];

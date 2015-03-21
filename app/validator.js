@@ -8,7 +8,7 @@ function Validator(sources, logger, tracker) {
     this.sources = sources;
     this.logger = logger;
     this.tracker = tracker;
-    this.DAY_MILLISECONDS = 2*86400000;
+    this.DAY_MILLISECONDS = 3*86400000;
 }
 Validator.prototype.validate = function verifyData(next) {
     var self = this,

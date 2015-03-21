@@ -1,18 +1,23 @@
 var _ = require('lodash'),
     ua = require('universal-analytics'),
+    redis = require('redis'),
+    env = require('./env'),
     Validator = require('./validator'),
     Crawler = require('./crawler'),
     Logger = require('./logger'),
     LaForet = require('./sources/laforet'),
     GuyHoquet = require('./sources/guyhoquet'),
+    Century21 = require('./sources/century21'),
     GreenAcres = require('./sources/greenacres');
 
 function Application() {
     this.logger = new Logger();
     this.tracker = ua('UA-49102903-2', 'crawler', {strictCidFormat: false});
+    this.redis = redis.createClient(env.REDIS_PORT, env.REDIS_ADDRESS);
     this.sources = {
-        laforet: new LaForet(this.logger, this.tracker),
-        guyhoquet: new GuyHoquet(this.logger, this.tracker)
+        laforet: new LaForet(this.logger, this.tracker, this.redis),
+        guyhoquet: new GuyHoquet(this.logger, this.tracker, this.redis),
+        century21: new Century21(this.logger, this.tracker, this.redis)
     }; 
 
     this.crawler = new Crawler(this.sources, this.logger, this.tracker);

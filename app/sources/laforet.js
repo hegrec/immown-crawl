@@ -4,9 +4,9 @@ var api = require('immodispo-api-client'),
     util = require('./../util'),
     constants = require('./../constants');
 
-function LaForet(logger, tracker) {
+function LaForet(logger, tracker, redis) {
 
-    Base.call(this, logger, tracker);
+    Base.call(this, logger, tracker, redis);
     this.pages = 1;
 }
 

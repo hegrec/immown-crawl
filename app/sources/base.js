@@ -11,11 +11,14 @@ var Crawler = require("crawler").Crawler,
 /**
  *
  * @param logger
+ * @param tracker
+ * @param redis
  * @constructor
  */
-function Scraper(logger, tracker) {
+function Scraper(logger, tracker, redis) {
     this.logger = logger;
     this.tracker = tracker;
+    this.redis = redis;
     this.crawler = new Crawler({
         maxConnections: 1
     });
@@ -102,6 +105,18 @@ Scraper.prototype.scrape = function(town, cb) {
     });
 };
 
+Scraper.prototype.setCookies = function(cookies) {
+    var cookieData = [];
+
+    this.cookieString = '';
+
+    _.each(cookies , function(cookie) {
+        cookieData.push(cookie.split(' ')[0]);
+    });
+
+    this.cookieString = cookieData.join(' ');
+};
+
 /**
  * Fetch the intitial URL and start the scraping process
  * @param error
@@ -110,18 +125,10 @@ Scraper.prototype.scrape = function(town, cb) {
  */
 Scraper.prototype.initialFetch = function (error, result, $) {
 
-    var cookies = [],
-        self = this;
+    var self = this;
 
     this.listingUrls = [];
-    this.cookieString = '';
-
-    _.each(result.headers['set-cookie'] , function(cookie) {
-
-        cookies.push(cookie.split(' ')[0]);
-    });
-
-    this.cookieString = cookies.join(' ');
+    this.setCookies(result.headers['set-cookie']);
 
     var onScrapedListingUrls = function(err, result) {
 

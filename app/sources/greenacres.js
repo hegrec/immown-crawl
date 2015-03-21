@@ -5,8 +5,8 @@ var api = require('immodispo-api-client'),
     util = require('./../util'),
     env = require('./../env');
 
-function GreenAcres(logger, tracker) {
-    Base.call(this, logger, tracker);
+function GreenAcres(logger, tracker, redis) {
+    Base.call(this, logger, tracker, redis);
     this.pages = 1;
 }
 
