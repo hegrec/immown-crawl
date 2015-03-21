@@ -21,9 +21,7 @@ module.exports = function (shipit) {
 
     shipit.on('published', function() {
         shipit.remote('cd /opt/immodispo-crawl/current && npm install').then(function(res) {
-            shipit.log(res);
             shipit.remote('cp /home/nodeapps/crawl-env.js /opt/immodispo-crawl/current/app/env.js').then(function(res) {
-                shipit.log(res);
                 //shipit.remote('pm2 restart crawl').then(function(res) {
                 //    shipit.log(res);
                 //});

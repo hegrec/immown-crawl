@@ -185,7 +185,7 @@ Scraper.prototype.handleListings = function () {
                         if (err) {
 
                             self.logger.log('error', err);
-                            return cb(null, null);
+                            return cb(err, null);
                         }
 
                         self.saveNewListing(listingModelData, onProcessedListing);
@@ -210,8 +210,8 @@ Scraper.prototype.handleListings = function () {
             self.logger.log('error', err);
         } else {
             self.logger.log('Town ' + self.town.name + ' complete for source: ' + self.getScraperName());
-            return self.cb(null, null);
         }
+        return self.cb(null, null);
     });
 };
 
