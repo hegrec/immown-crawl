@@ -105,7 +105,7 @@ Crawler.prototype.crawl = function crawl(cb) {
 
     //find the 100 most populous towns and order them randomly for processing
     var startPos = Math.floor(Math.random() * 1000);
-    this.api.get(env.API_HOST + "/towns?sort=-population&limit=1000&start="+startPos, function(err, biggestTowns) {
+    this.api.get(env.API_HOST + "/towns?sort=-population&limit=25&start="+startPos, function(err, biggestTowns) {
         var townQueue = [],
             ndx;
 
