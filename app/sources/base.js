@@ -186,9 +186,11 @@ Scraper.prototype.handleListings = function () {
 
                             self.logger.log('error', err);
                             return cb(err, null);
+                        } else if (listingModelData) {
+                            self.saveNewListing(listingModelData, onProcessedListing);
+                        } else {
+                            cb(null, null);
                         }
-
-                        self.saveNewListing(listingModelData, onProcessedListing);
                     });
 
                 } else {

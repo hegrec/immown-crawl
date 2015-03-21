@@ -119,7 +119,7 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
 
     if (images.length < 5) {
         self.redis.hset(self.visitedHashKey, url, '1', function(err, result) {
-            return callback('Not enough images (' + images.length + ')');
+            return callback(null, null);
         });
         return;
     }
