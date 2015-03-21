@@ -97,7 +97,7 @@ Crawler.prototype.processSource = function processTown(source, cb) {
 Crawler.prototype.crawl = function crawl(cb) {
 
     var self = this,
-        crawlCount = 3;
+        crawlCount = 1;
     self.callback = cb;
     this.tracker.event('crawler', 'crawler.start', function(err) {
 

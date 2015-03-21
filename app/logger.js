@@ -8,7 +8,11 @@ Logger.prototype.log = function log(type, message) {
         type = 'info';
     }
 
-    console.log("["+type+"] "+message);
+    if (type == 'error') {
+        return console.error(message);
+    }
+
+    console.log(message);
 };
 
 module.exports = Logger;
