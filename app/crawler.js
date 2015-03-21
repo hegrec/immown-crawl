@@ -96,16 +96,17 @@ Crawler.prototype.processSource = function processTown(source, cb) {
  */
 Crawler.prototype.crawl = function crawl(cb) {
 
-    var self = this;
+    var self = this,
+        crawlCount = 5;
     self.callback = cb;
     this.tracker.event('crawler', 'crawler.start', function(err) {
 
     });
-    self.logger.log("Starting Node.js Crawler");
+    self.logger.log("Starting Node.js Crawler for "+ crawlCount + " towns");
 
     //find the 100 most populous towns and order them randomly for processing
-    var startPos = Math.floor(Math.random() * 1000);
-    this.api.get(env.API_HOST + "/towns?sort=-population&limit=25&start="+startPos, function(err, biggestTowns) {
+    var startPos = Math.floor(Math.random() * (36777-crawlCount));
+    this.api.get(env.API_HOST + "/towns?sort=-population&limit=" + crawlCount + "&start="+startPos, function(err, biggestTowns) {
         var townQueue = [],
             ndx;
 
