@@ -14,7 +14,7 @@ function _guid() {
 }
 
 function findTownByName(name, cb) {
-    api.get(env.API_HOST + '/towns?filter=name=' + encodeURIComponent(name), function (err, items) {
+    api.get(env.API_HOST + '/towns?filter=name~>' + encodeURIComponent(name), function (err, items) {
         if (err) {
             return cb(err);
         }

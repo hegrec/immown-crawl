@@ -185,7 +185,7 @@ GuyHoquet.prototype.processListing = function (listingModel, $, url, rental, cal
 
 GuyHoquet.prototype.initialUrl = function() {
     var searchname = (this.town.name + '-' + this.town.code).replace(/\s/g,'-');
-    return 'http://www.guy-hoquet.com/annonces-immobilieres/achat/appartement/maison/terrain/' + searchname + '.aspx?rad=5';
+    return 'http://www.guy-hoquet.com/annonces-immobilieres/achat/appartement/maison/terrain/' + searchname + '.aspx?rad=25';
 };
 
 GuyHoquet.prototype.getScraperName = function() {

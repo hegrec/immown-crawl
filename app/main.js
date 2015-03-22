@@ -8,7 +8,7 @@ var _ = require('lodash'),
     LaForet = require('./sources/laforet'),
     GuyHoquet = require('./sources/guyhoquet'),
     Century21 = require('./sources/century21'),
-    GreenAcres = require('./sources/greenacres');
+    CapiFrance = require('./sources/capifrance');
 
 function Application() {
     this.logger = new Logger();
@@ -17,7 +17,8 @@ function Application() {
     this.sources = {
         laforet: new LaForet(this.logger, this.tracker, this.redis),
         guyhoquet: new GuyHoquet(this.logger, this.tracker, this.redis),
-        century21: new Century21(this.logger, this.tracker, this.redis)
+        century21: new Century21(this.logger, this.tracker, this.redis),
+        capifrance: new CapiFrance(this.logger, this.tracker, this.redis)
     }; 
 
     this.crawler = new Crawler(this.sources, this.logger, this.tracker);

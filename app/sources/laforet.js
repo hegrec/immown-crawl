@@ -133,6 +133,8 @@ LaForet.prototype.processListing = function (listingModel, $, url, rental, callb
     listingModel.agency.website = $(".adresse a.infos2").attr("href");
     listingModel.agency.address_1 = agencyTownContainer.next().text();
     townName = townName.replace('Aux alentours de','').trim();
+    townName = townName.replace(' L ', ' L\'');
+    townName = townName.replace(' D ', ' D\'');
     async.parallel([
         function(cb) {
             util.findTownByName(townName, function(err, town) {
