@@ -17,7 +17,7 @@ function DomainListing() {
     listing.interior_size = 0;
     listing.total_size = 0;
     listing.year_built = 0;
-    listing.is_rental = false;
+    listing.is_rental = 0;
 
     listing.TownId = null;
     listing.agency = new DomainAgency();

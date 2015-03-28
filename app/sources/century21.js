@@ -49,7 +49,6 @@ Century21.prototype.preScrape = function(cb) {
                     headers: self.getNeedleHeaders()
                 };
 
-
                 needle.get(autoCompleteUrl, options, function(err, res) {
                     var data = res.body;
 
@@ -68,11 +67,10 @@ Century21.prototype.preScrape = function(cb) {
     });
 };
 
-
-Century21.prototype.scrapeUrlPage = function (result, $, cb) {
+Century21.prototype.scrapeUrlPage = function (result, $, cb, rent) {
     var self = this;
 
-    var listingUrlPrecheck = []
+    var listingUrlPrecheck = [];
     $("li.annonce div.zone-photo-exclu>a").each(function (index, a) {
         var listingURL = $(a).attr('href');
         listingUrlPrecheck.push(self.getURL()+listingURL);
@@ -299,10 +297,16 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
     });
 };
 
-Century21.prototype.initialUrl = function() {
-    return 'http://www.century21.fr/annonces/achat-maison-appartement-terrain/'
+    Century21.prototype.initialUrl = function() {
+        return 'http://www.century21.fr/annonces/achat-maison-appartement-terrain/'
+            + this.localizedTown
+            + '/s-0-/st-0-/b-0-/page-1-1000/';
+};
+
+Century21.prototype.initialRentUrl = function() {
+    return 'http://www.century21.fr/annonces/location-maison-appartement/'
         + this.localizedTown
-        + '/s-0-/st-0-/b-0-/page-1-1000/';
+        + '/alentours-15/s-0-/st-0-/b-0-/page-1-1000/';
 };
 
 Century21.prototype.getScraperName = function() {

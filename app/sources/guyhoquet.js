@@ -12,7 +12,7 @@ function GuyHoquet(logger, tracker, redis) {
 
 GuyHoquet.prototype = Object.create(Base.prototype);
 
-GuyHoquet.prototype.scrapeUrlPage = function (result, $, cb) {
+GuyHoquet.prototype.scrapeUrlPage = function (result, $, cb, rent) {
     var self = this,
         baseURL = result.window.document._URL,
         nextPage = $('a.suiv.dd').attr('href');
@@ -186,6 +186,11 @@ GuyHoquet.prototype.processListing = function (listingModel, $, url, rental, cal
 GuyHoquet.prototype.initialUrl = function() {
     var searchname = (this.town.name + '-' + this.town.code).replace(/\s/g,'-');
     return 'http://www.guy-hoquet.com/annonces-immobilieres/achat/appartement/maison/terrain/' + searchname + '.aspx?rad=25';
+};
+
+GuyHoquet.prototype.initialRentUrl = function() {
+    var searchname = (this.town.name + '-' + this.town.code).replace(/\s/g,'-');
+    return 'http://www.guy-hoquet.com/annonces-immobilieres/location/appartement/maison/' + searchname + '.aspx?rad=50';
 };
 
 GuyHoquet.prototype.getScraperName = function() {

@@ -12,7 +12,7 @@ function LaForet(logger, tracker, redis) {
 
 LaForet.prototype = Object.create(Base.prototype);
 
-LaForet.prototype.scrapeUrlPage = function (result, $, cb) {
+LaForet.prototype.scrapeUrlPage = function (result, $, cb, rent) {
 
     var self = this,
         nextPage = $('a.suiv.dd').attr("href");
@@ -50,13 +50,22 @@ LaForet.prototype.scrapeUrlPage = function (result, $, cb) {
     }
 };
 
+LaForet.prototype.initialRentUrl = function() {
+    var name = this.town.name.replace(" ","+");
+
+    return "http://www.laforet.com/immobilier/location-immobilier/resultats.php"
+        + "?transactionType=2&libre1=" + name + "&libre2=&libre3=&libre4=&libre=&large=15"
+        + "&priceMax=Max&priceMin=0&habitmax=Max&habitmin=0&fieldmin=&appartement=on&maison=on"
+        + "&floorMin=&floorMax=&id=&largeMap=";
+};
+
 LaForet.prototype.initialUrl = function() {
 
     var name = this.town.name.replace(" ","+") + "+("+this.town.code+")";
 
     return "http://www.laforet.com/immobilier/acheter-immobilier/resultats.php" +
         "?transactionType=1&libre="+name+
-        "&appartement=on&maison=on&" +
+        "&appartement=on&maison=on&terrain=on" +
         "rooms1=1&rooms2=2&rooms3=3&rooms4=4&rooms5=5&" +
         "bedrooms1=1&bedrooms2=2&bedrooms3=3&bedrooms4=4&bedrooms5=5&" +
         "priceMax=Max&priceMin=0&habitmax=Max&habitmin=0&largeMap=0&nbresult=50";

@@ -40,13 +40,19 @@ Scraper.prototype.preScrape = function(cb) {
  * @param result
  * @param $
  * @param cb
+ * @param rent
  */
-Scraper.prototype.scrapeUrlPage = function(result, $, cb) {};
+Scraper.prototype.scrapeUrlPage = function(result, $, cb, rent) {};
 
 /**
  * Return the initial URL to scrape
  */
 Scraper.prototype.initialUrl = function() {};
+
+/**
+ * Return the initial rent URL to scrape
+ */
+Scraper.prototype.initialRentUrl = function() {};
 
 /**
  * Get a friendly name for the source
@@ -88,19 +94,51 @@ Scraper.prototype.scrape = function(town, cb) {
             return cb(null, null);
         }
 
-        self.crawler.queue({
-            uri: self.initialUrl(),
-            callback: function (err, result, $) {
+        var purchaseScrapeTask = function(cb) {
+            self.crawler.queue({
+                uri: self.initialUrl(),
+                callback: function (err, result, $) {
 
-                if (err) {
+                    if (err) {
 
-                    self.logger.log('error', err);
-                    return cb(null, null);
-                } else {
+                        self.logger.log('error', err);
+                        return cb(null, null);
+                    } else {
 
-                    self.initialFetch(err, result, $)
+                        self.initialFetch(result, $, cb, false)
+                    }
                 }
-            }
+            });
+        };
+
+        var rentScrapeTask = function(cb) {
+            self.crawler.queue({
+                uri: self.initialRentUrl(),
+                callback: function (err, result, $) {
+
+                    if (err) {
+
+                        self.logger.log('error', err);
+                        return cb(null, null);
+                    } else {
+
+                        self.initialFetch(result, $, cb, true)
+                    }
+                }
+            });
+        };
+
+        async.series([purchaseScrapeTask, rentScrapeTask], function(err, result) {
+           async.series([
+               function(cb) {
+                   self.handleListings(result[0], false, cb);
+               },
+               function(cb) {
+                   self.handleListings(result[1], true, cb);
+               }
+           ], function(err, result) {
+                self.cb(null, null);
+           })
         });
     });
 };
@@ -118,39 +156,51 @@ Scraper.prototype.setCookies = function(cookies) {
 };
 
 /**
- * Fetch the intitial URL and start the scraping process
- * @param error
+ *
  * @param result
  * @param $
+ * @param cb
+ * @param rent
  */
-Scraper.prototype.initialFetch = function (error, result, $) {
-
+Scraper.prototype.initialFetch = function (result, $, cb, rent) {
     var self = this;
 
     this.listingUrls = [];
     this.setCookies(result.headers['set-cookie']);
 
     var onScrapedListingUrls = function(err, result) {
+        var rentalString = " purchases";
 
-        self.logger.log(self.listingUrls.length + ' urls for town '
-            + self.town.name + ' (' + self.town.code + ') from ' + self.pages + ' pages');
+        result = [];
 
-        self.handleListings();
+        _.each(self.listingUrls, function(url) {
+            result.push(url);
+        });
+
+        self.listingUrls = [];
+
+        if (rent) {
+            rentalString = " rentals";
+        }
+        self.logger.log(self.getScraperName() + ' ' + result.length + rentalString + ' for town '
+            + self.town.name + ' (' + self.town.code + ')');
+
+        cb(null, result);
     };
 
-    this.scrapeUrlPage(result, $, onScrapedListingUrls);
+    this.scrapeUrlPage(result, $, onScrapedListingUrls, rent);
 };
 
 /**
  * Called appropriately when the processing sequence begins or a previous listing finished processing
  * Asynchronously runs the next processing task for the given listing URL at the head of the queue
  */
-Scraper.prototype.handleListings = function () {
+Scraper.prototype.handleListings = function (listingUrls, isRental, cb) {
 
     var self = this,
         tasks = [];
 
-    _.each(this.listingUrls, function(listingUrl) {
+    _.each(listingUrls, function(listingUrl) {
 
         var task = function(cb) {
             var encodedURL = encodeURIComponent(listingUrl),
@@ -163,20 +213,16 @@ Scraper.prototype.handleListings = function () {
                     self.tracker.timing('crawler', 'crawler.processUrl', elapsed, listingUrl);
                     cb(err, savedListing);
                 },
-                time = new Date().getTime(),
-                isRental = false; //TODO: map this to a boolean tied to rent in the 1st phase of url scanning
+                time = new Date().getTime();
 
                 if (err) {
-
                     self.logger.log('error', err);
                     return cb(null, null);
                 }
 
                 //if we already have this listing stored, skip to the next one
                 if (items.body.length == 0) {
-                    self.tracker.event('crawler', 'crawler.scrapeUrl', listingUrl, function(err) {
-
-                    });
+                    self.tracker.event('crawler', 'crawler.scrapeUrl', listingUrl, function(err) {});
 
                     self.handleListing(listingUrl, isRental, function(err, listingModelData) {
                         nowTime = new Date().getTime();
@@ -208,12 +254,7 @@ Scraper.prototype.handleListings = function () {
     //each town task will happen one at a time per source
     async.series(tasks, function(err, result) {
 
-        if (err) {
-            self.logger.log('error', err);
-        } else {
-            self.logger.log('Town ' + self.town.name + ' complete for source: ' + self.getScraperName());
-        }
-        return self.cb(null, null);
+        cb(null, null);
     });
 };
 
@@ -240,7 +281,9 @@ Scraper.prototype.handleListing = function (url, rental, cb) {
             }
 
             try {
-
+                if (rental) {
+                    listingModel.is_rental = 1;
+                }
                 self.processListing(listingModel, $, url, rental, cb)
             } catch (e) {
 

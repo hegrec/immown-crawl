@@ -74,7 +74,7 @@ CapiFrance.prototype.preScrape = function(cb) {
 };
 
 
-CapiFrance.prototype.scrapeUrlPage = function (result, $, cb, isAjax) {
+CapiFrance.prototype.scrapeUrlPage = function (result, $, cb, rent, isAjax) {
     var self = this,
         nextPage = $('li.more-result').length,
         nextPageHeaders = self.getNeedleHeaders(),
@@ -111,10 +111,10 @@ CapiFrance.prototype.scrapeUrlPage = function (result, $, cb, isAjax) {
             uri: self.initialUrl(this.page),
             callback: function (err, response, $) {
                 if (err) {
-                    self.logger.log("error", err)
+                    self.logger.log("error", err);
                     return cb(err, null);
                 } else {
-                    self.scrapeUrlPage(response, $, cb, true)
+                    self.scrapeUrlPage(response, $, cb, rent, true)
                 }
             },
             headers: nextPageHeaders
@@ -253,6 +253,15 @@ CapiFrance.prototype.initialUrl = function(page) {
         + page
         + '?capi_sitebundle_adssearch%5BsearchType%5D=1&capi_sitebundle_adssearch%5Blocation%5D='
         + this.searchTownCode + '&capi_sitebundle_adssearch%5Bdistance%5D=10&capi_sitebundle_adssearch%5BsearchPropertyType%5D%5B%5D=1200&capi_sitebundle_adssearch%5BsearchPropertyType%5D%5B%5D=1100&capi_sitebundle_adssearch%5BsearchPropertyType%5D%5B%5D=1300&capi_sitebundle_adssearch%5BsearchBudgetMax%5D=90000000&capi_sitebundle_adssearch%5BsearchLivingSize%5D=0&capi_sitebundle_adssearch%5Bemail%5D=';
+};
+
+CapiFrance.prototype.initialRentUrl = function(page) {
+    page = page ? page : '';
+
+    return 'http://www.capifrance.fr/annonces/recherche'
+        + page
+        + '?capi_sitebundle_adssearch%5BsearchType%5D=2&capi_sitebundle_adssearch%5Blocation%5D='
+        + this.searchTownCode + '&capi_sitebundle_adssearch%5Bdistance%5D=20&capi_sitebundle_adssearch%5BsearchPropertyType%5D%5B%5D=1200&capi_sitebundle_adssearch%5BsearchPropertyType%5D%5B%5D=1100&capi_sitebundle_adssearch%5BsearchBudgetMax%5D=90000000&capi_sitebundle_adssearch%5BsearchLivingSize%5D=0#ccNewSearch';
 };
 
 CapiFrance.prototype.getScraperName = function() {
