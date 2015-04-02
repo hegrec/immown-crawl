@@ -9,7 +9,7 @@ function Crawler(sources, logger, tracker) {
     this.tracker = tracker;
     this.towns = [];
     this.LISTINGS_PER_DAY = 50000;
-    this.LISTINGS_MAX = 100000;
+    this.LISTINGS_MAX = 70000;
     this.api = new Api(env.api.username, env.api.password);
 }
 

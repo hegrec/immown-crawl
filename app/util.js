@@ -30,7 +30,7 @@ function findTownByName(name, cb) {
 
 
 function findTownByPostcode(code, cb) {
-    api.get(env.API_HOST + '/towns?filter=code=' + Number(code), function (err, items) {
+    api.get(env.API_HOST + '/towns?sort=-population&filter=code=' + Number(code), function (err, items) {
         if (err) {
             return cb(err);
         }
