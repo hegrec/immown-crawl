@@ -15,7 +15,7 @@ function CapiFrance(logger, tracker, redis) {
 
 CapiFrance.prototype = Object.create(Base.prototype);
 
-CapiFrance.prototype.getNeedleHeaders = function() {
+CapiFrance.prototype.getHeaders = function(ajax) {
     var headers = {};
 
     headers['DNT'] = 1;
@@ -25,7 +25,9 @@ CapiFrance.prototype.getNeedleHeaders = function() {
     headers['Cache-Control'] = 'max-age=0';
     headers['Accept'] = 'application/json, text/javascript, */*; q=0.01';
     headers['Accept-Encoding'] = 'gzip, deflate, sdch';
-    headers['X-Requested-With'] = 'XMLHttpRequest';
+    if (ajax) {
+        headers['X-Requested-With'] = 'XMLHttpRequest';
+    }
     headers['Accept-Language'] = 'en-CA,en;q=0.8,en-US;q=0.6,fr;q=0.4,fr-FR;q=0.2';
     headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36';
 
@@ -47,7 +49,7 @@ CapiFrance.prototype.preScrape = function(cb) {
                 return cb(err, null);
             } else {
                 options = {
-                    headers: self.getNeedleHeaders()
+                    headers: self.getHeaders(true)
                 };
 
                 self.setCookies(result.headers['set-cookie']);
@@ -67,9 +69,7 @@ CapiFrance.prototype.preScrape = function(cb) {
                 });
             }
         },
-        headers: {
-            Cookie: self.cookieString
-        }
+        headers: self.getHeaders()
     });
 };
 
@@ -77,13 +77,12 @@ CapiFrance.prototype.preScrape = function(cb) {
 CapiFrance.prototype.scrapeUrlPage = function (result, $, cb, rent, isAjax) {
     var self = this,
         nextPage = $('li.more-result').length,
-        nextPageHeaders = self.getNeedleHeaders(),
+        nextPageHeaders = self.getHeaders(true),
         selector;
 
-    nextPageHeaders['Cookie'] = self.cookieString;
-
     if (isAjax) {
-        selector = $('li')
+        selector = $('li.add-item');
+        nextPage = $('script').text().indexOf('more-result') > -1;
     } else {
         selector = $('#ajaxExactAds').find('li');
     }
@@ -106,9 +105,9 @@ CapiFrance.prototype.scrapeUrlPage = function (result, $, cb, rent, isAjax) {
 
 
 
-    if (nextPage && ++this.pages < 20) {
+    if (nextPage && ++this.pages < 50) {
         self.crawler.queue({
-            uri: self.initialUrl(this.page),
+            uri: self.initialUrl(this.pages),
             callback: function (err, response, $) {
                 if (err) {
                     self.logger.log("error", err);
@@ -144,7 +143,7 @@ CapiFrance.prototype.processListing = function (listingModel, $, currentUrl, ren
     price = price.match("[0-9]+")[0];
     listingModel.listing_url = currentUrl;
     listingModel.price = price;
-    listingModel.description = $('div.adDetails p:first').text().trim();
+    listingModel.description = $('div.adDetails p:first-of-type').text().trim();
 
     images.each(function (index, img) {
         var listingImage = $(img).attr("src");
@@ -247,7 +246,7 @@ CapiFrance.prototype.processListing = function (listingModel, $, currentUrl, ren
 };
 
 CapiFrance.prototype.initialUrl = function(page) {
-    page = page ? page : '';
+    page = page ? ('/'+page) : '';
 
     return 'http://www.capifrance.fr/annonces/recherche'
         + page
@@ -256,7 +255,7 @@ CapiFrance.prototype.initialUrl = function(page) {
 };
 
 CapiFrance.prototype.initialRentUrl = function(page) {
-    page = page ? page : '';
+    page = page ?  ('/'+page) : '';
 
     return 'http://www.capifrance.fr/annonces/recherche'
         + page

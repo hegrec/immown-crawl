@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "async": "^0.9.0",
-    "crawler": "0.2.7",
+    "crawler": "^0.4.3",
     "hiredis": "^0.2.0",
     "hoek": "^2.10.0",
     "immodispo-api-client": "https://github.com/hegrec/immodispo-api-client/archive/0.6.tar.gz",

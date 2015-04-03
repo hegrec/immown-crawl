@@ -12,63 +12,75 @@ function LaForet(logger, tracker, redis) {
 
 LaForet.prototype = Object.create(Base.prototype);
 
+LaForet.prototype.getHeaders = function() {
+    var headers = {};
+
+    headers['DNT'] = 1;
+    headers['Host'] = 'www.laforet.com';
+    headers['Referer'] = 'http://www.laforet.com/';
+    headers['Connection'] = 'keep-alive';
+    headers['Cookie'] = this.cookieString;
+    headers['Cache-Control'] = 'max-age=0';
+    headers['Accept'] = 'application/json, text/javascript, */*; q=0.01';
+    headers['Accept-Encoding'] = 'gzip, deflate, sdch';
+    headers['X-Requested-With'] = 'XMLHttpRequest';
+    headers['Accept-Language'] = 'en-CA,en;q=0.8,en-US;q=0.6,fr;q=0.4,fr-FR;q=0.2';
+    headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36';
+
+    return headers;
+};
+
 LaForet.prototype.scrapeUrlPage = function (result, $, cb, rent) {
-
     var self = this,
-        nextPage = $('a.suiv.dd').attr("href");
+        selector = $('li.draggable'),
+        nextPage = selector.length,
+        nextPageHeaders = self.getHeaders();
 
-    $(".resultat>ul li ").each(function (index, li) {
+    selector.each(function (index, li) {
+        var $li = $(li),
+            jsonData = $li.data('json'),
+            numPics = jsonData.picturesLetters.length;
 
-        var listingURL = $(li).find("a:first-child").attr("href"),
-            photos = Number($(li).find(".nb-photos>p").text().split(" ")[0]);
-
-        if (photos >= 5) {
-            self.listingUrls.push(self.getURL() + listingURL);
+        if (!numPics || numPics<5) {
+            return;
         }
+
+        self.listingUrls.push(self.getURL() + jsonData.url);
     });
 
-    if (nextPage) {
-
-        this.pages++;
-        this.crawler.queue({
-            uri: self.getURL() + nextPage,
-            headers: {
-                Cookie: self.cookieString
-            },
-            callback: function(err, response, $) {
-
-                if (err) {
-                    self.logger.log("error",err);
+    if (nextPage && ++this.pages < 50) {
+        self.crawler.queue({
+            uri: self.initialUrl(this.pages),
+            callback: function (err, response, $) {
+                if (err || !$) {
+                    self.logger.log("error", err);
                     return cb(err, null);
                 } else {
-                    self.scrapeUrlPage(response, $, cb)
+                    self.scrapeUrlPage(response, $, cb, rent)
                 }
-            }
+            },
+            headers: nextPageHeaders
         });
-    } else {
+    }
+    else {
         cb(null, true);
     }
 };
 
-LaForet.prototype.initialRentUrl = function() {
-    var name = this.town.name.replace(" ","+");
-
-    return "http://www.laforet.com/immobilier/location-immobilier/resultats.php"
-        + "?transactionType=2&libre1=" + name + "&libre2=&libre3=&libre4=&libre=&large=15"
-        + "&priceMax=Max&priceMin=0&habitmax=Max&habitmin=0&fieldmin=&appartement=on&maison=on"
-        + "&floorMin=&floorMax=&id=&largeMap=";
+LaForet.prototype.initialRentUrl = function(page) {
+    var name = encodeURIComponent(this.town.name + " ("+ this.town.code + ")");
+    page = page || 1;
+    return "http://www.laforet.com/louer/recherche-ajax/" + page + "?localisation=" + name + "&rayon=45"
+        + "&price_min=0&price_max=Max&surface_min=0&surface_max=Max&ground_surface=&"
+        + "maison=on&appartement=on&terrain=on&floor_min=&floor_max=&photos=1&reference=";
 };
 
-LaForet.prototype.initialUrl = function() {
-
-    var name = this.town.name.replace(" ","+") + "+("+this.town.code+")";
-
-    return "http://www.laforet.com/immobilier/acheter-immobilier/resultats.php" +
-        "?transactionType=1&libre="+name+
-        "&appartement=on&maison=on&terrain=on" +
-        "rooms1=1&rooms2=2&rooms3=3&rooms4=4&rooms5=5&" +
-        "bedrooms1=1&bedrooms2=2&bedrooms3=3&bedrooms4=4&bedrooms5=5&" +
-        "priceMax=Max&priceMin=0&habitmax=Max&habitmin=0&largeMap=0&nbresult=50";
+LaForet.prototype.initialUrl = function(page) {
+    var name = encodeURIComponent(this.town.name + " ("+ this.town.code + ")");
+    page = page || 1;
+    return "http://www.laforet.com/acheter/recherche-ajax/" + page + "?localisation=" + name + "&rayon=45"
+        + "&price_min=0&price_max=Max&surface_min=0&surface_max=Max&ground_surface=&"
+        + "maison=on&appartement=on&terrain=on&floor_min=&floor_max=&photos=1&reference=";
 };
 
 LaForet.prototype.getURL = function() {
@@ -77,73 +89,64 @@ LaForet.prototype.getURL = function() {
 
 LaForet.prototype.processListing = function (listingModel, $, url, rental, callback) {
     var self = this,
-        agencyTownContainer = $(".form-agence .adresse p").first(),
+        agencyTownContainer = $('div.agency-detail ul').prev(),
         fullHTMLContent = $('body').html(),
         latMatch = fullHTMLContent.match(/latitude: (-?\d*(\.\d+)?)/),
         lngMatch = fullHTMLContent.match(/longitude: (-?\d*(\.\d+)?)/),
-        townName = $('div.titre-annonce').text().trim().replace(/\(.+?\)/,'').trim(),
-        agencyTown = agencyTownContainer.text().split("(")[0].trim(); // err - description of the error or null
+        jsonData = $('ul.contact-nav li.comparateur').data('json'),
+        townName = jsonData.city,
+        propertyType = jsonData.propertyType,
+        price = jsonData.price,
+        agencyTown = agencyTownContainer.text().replace(/\d{5}/,'').trim(); // err - description of the error or null
 
     listingModel.listing_url = url;
 
-    $(".fiche-annonce .carousselImages>ul li").each(function(index,li){
-        var listingImage = self.getURL()+$(li).find("img:first-child").attr("bigimage");
+    $('#slideshow-main-1').find('img').each(function (index, img) {
+        var listingImage = $(img).attr("src");
         listingModel.images.push(listingImage);
     });
 
-    $("p.caracteristiques").each(function(index,p){
-        var txt = $(p).text();
+    if ( propertyType == 2 ) {
+        listingModel.construction_type = constants.CONSTRUCTION_TYPE_APARTMENT;
+    } else if ( propertyType == 1 ) {
+        listingModel.construction_type = constants.CONSTRUCTION_TYPE_HOUSE;
+    } else if ( propertyType == 4 ) {
+        listingModel.construction_type = constants.CONSTRUCTION_TYPE_LAND;
+    }
 
-        if (txt.indexOf("€") > -1) {
-            txt = txt.replace(/\s/g, '');
-            listingModel.price = txt.match("[0-9]+")[0];
-        } else if (txt.indexOf("pièce") > -1) {
-            txt = txt.replace(/\s/g, '');
-            listingModel.num_rooms = txt.match("[0-9]+")[0];
+    listingModel.price = price;
+    listingModel.num_rooms = jsonData.roomsQuantity;
+    listingModel.interior_size = jsonData.surface;
+    listingModel.description = jsonData.description;
 
-            if ( txt.toLowerCase().indexOf( "appartement" ) > -1 ) {
-                listingModel.construction_type = constants.CONSTRUCTION_TYPE_APARTMENT;
-            } else if ( txt.toLowerCase().indexOf( "maison" )  > -1 || txt.toLowerCase().indexOf( "immeuble" )  > -1 ) {
-                listingModel.construction_type = constants.CONSTRUCTION_TYPE_HOUSE;
-            } else if ( txt.toLowerCase().indexOf( "terrain" )  > -1 ) {
-                listingModel.construction_type = constants.CONSTRUCTION_TYPE_LAND;
-            }
-        } else if (txt.indexOf("m²") > -1) {
-            txt = txt.replace(/\s/g, '');
-            listingModel.total_size = Number(txt.match("[0-9]+")[0]);
-        }
-    });
+    $(".caracteristiques-detail>ul li").each(function(index,li) {
 
-    listingModel.description = $(".fiche-annonce p.pictos").next().text().trim();
-    listingModel.num_bathrooms = 0;
+        var origKey = $(li).find('span.detail-title').text(),
+            origVal = $(li).find('span.detail-description').text(),
+            key = origKey.toLowerCase(),
+            val = origVal.replace(/\s/g,'');
 
-    $(".detail-caracteristiques>ul li").each(function(index,li) {
-
-        var txt = $(li).text().replace(/\s/g, '').split(":"),
-            orig = $(li).text().split(":"),
-            key = txt[0].toLowerCase(),
-            val = txt[1];
-
-        if (key == "surfaceséjour" && val.match("[0-9]+")) {
-            listingModel.interior_size = Number(val.match("[0-9]+")[0]);
-        } else if (key == "nombredechambres" && val.match("[0-9]+")) {
+        if (key.indexOf("nombre de chambres") > -1 && val.match("[0-9]+")) {
             listingModel.num_bedrooms = Number(val.match("[0-9]+")[0]);
-        } else if ((key == "salledebain" || key == "salled'eau") && val.match("[0-9]+")) {
+        } else if ((key.indexOf("salle de bain") > -1 || key.indexOf("salle d'eau") > -1) && val.match("[0-9]+")) {
             listingModel.num_bathrooms = listingModel.num_bathrooms+ Number(val.match("[0-9]+")[0]);
-        } else if (key == "annéedeconstruction" && val.match("[0-9]+")) {
+        } else if (key.indexOf("année de construction") > -1 && val.match("[0-9]+")) {
             listingModel.year_built = Number(val.match("[0-9]+")[0]);
-        } else if ((key == "terrain" || key == "jardin") && val.match("[0-9]+")) {
+        } else if ((key.indexOf("terrain") > -1 || key.indexOf("jardin") > -1) && val.match("[0-9]+")) {
             listingModel.land_size = Number(val.match("[0-9]+"));
-        } else if (orig.length > 1) {
-            listingModel.details[orig[0].trim()] = orig[1].trim();
+        } else if (val.trim().length > 1) {
+            listingModel.details[origKey.trim()] = origVal.trim();
         }
     });
 
-    listingModel.agency.website = $(".adresse a.infos2").attr("href");
-    listingModel.agency.address_1 = agencyTownContainer.next().text();
+    listingModel.agency.website = $('div.agency-detail ul a').attr("href");
+    listingModel.agency.address_1 = agencyTownContainer.prev().text();
+    listingModel.agency.telephone = $('ul.contact-nav li.appeler span.toggle-show').text().replace(/[+|\(|\)|\s]/g,'')
     townName = townName.replace('Aux alentours de','').trim();
     townName = townName.replace(' L ', ' L\'');
     townName = townName.replace(' D ', ' D\'');
+    agencyTown = agencyTown.replace(' L ', ' L\'');
+    agencyTown = agencyTown.replace(' D ', ' D\'');
     async.parallel([
         function(cb) {
             util.findTownByName(townName, function(err, town) {

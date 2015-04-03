@@ -1,4 +1,4 @@
-var Crawler = require("crawler").Crawler,
+var Crawler = require("crawler"),
     utils = require("../util"),
     _ = require('lodash'),
     env = require("../env"),
@@ -55,6 +55,10 @@ Scraper.prototype.initialUrl = function() {};
 Scraper.prototype.initialRentUrl = function() {};
 
 /**
+ * Return the headers to use in the crawler
+ */
+Scraper.prototype.getHeaders = function() {};
+/**
  * Get a friendly name for the source
  * @returns {string}
  */
@@ -99,7 +103,7 @@ Scraper.prototype.scrape = function(town, cb) {
                 uri: self.initialUrl(),
                 callback: function (err, result, $) {
 
-                    if (err) {
+                    if (err || !$) {
 
                         self.logger.log('error', err);
                         return cb(null, null);
@@ -107,7 +111,8 @@ Scraper.prototype.scrape = function(town, cb) {
 
                         self.initialFetch(result, $, cb, false)
                     }
-                }
+                },
+                headers: self.getHeaders()
             });
         };
 
@@ -116,7 +121,7 @@ Scraper.prototype.scrape = function(town, cb) {
                 uri: self.initialRentUrl(),
                 callback: function (err, result, $) {
 
-                    if (err) {
+                    if (err || !$) {
 
                         self.logger.log('error', err);
                         return cb(null, null);
@@ -124,6 +129,9 @@ Scraper.prototype.scrape = function(town, cb) {
 
                         self.initialFetch(result, $, cb, true)
                     }
+                },
+                headers: {
+                    Cookie: self.cookieString
                 }
             });
         };
@@ -152,7 +160,7 @@ Scraper.prototype.setCookies = function(cookies) {
         cookieData.push(cookie.split(' ')[0]);
     });
 
-    this.cookieString = cookieData.join(' ');
+    this.cookieString = cookieData.join('; ');
 };
 
 /**
@@ -163,6 +171,8 @@ Scraper.prototype.setCookies = function(cookies) {
  * @param rent
  */
 Scraper.prototype.initialFetch = function (result, $, cb, rent) {
+
+
     var self = this;
 
     this.listingUrls = [];
@@ -276,7 +286,6 @@ Scraper.prototype.handleListing = function (url, rental, cb) {
             var listingModel = new DomainListing();
 
             if (err) {
-                self.logger.log("error", err);
                 return cb(err);
             }
 
@@ -291,9 +300,7 @@ Scraper.prototype.handleListing = function (url, rental, cb) {
                 return cb(e);
             }
         },
-        headers: {
-            Cookie: self.cookieString
-        }
+        headers: self.getHeaders()
     });
 };
 
@@ -418,9 +425,7 @@ Scraper.prototype.saveListingImage = function(imageUrl, listingId, cb) {
             host: url.parse(imageUrl).host,
             port: 80,
             path: url.parse(imageUrl).pathname,
-            headers: {
-                Cookie: this.cookieString
-            }
+            headers: self.getHeaders()
         },
         data = [];
 

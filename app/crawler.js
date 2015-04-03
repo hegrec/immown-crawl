@@ -9,7 +9,7 @@ function Crawler(sources, logger, tracker) {
     this.tracker = tracker;
     this.towns = [];
     this.LISTINGS_PER_DAY = 50000;
-    this.LISTINGS_MAX = 70000;
+    this.LISTINGS_MAX = 80000;
     this.api = new Api(env.api.username, env.api.password);
 }
 
@@ -105,7 +105,7 @@ Crawler.prototype.crawl = function crawl(cb) {
     self.logger.log("Starting Node.js Crawler for "+ crawlCount + " towns");
 
     //find the 100 most populous towns and order them randomly for processing
-    var startPos = Math.floor(Math.random() * (36777-crawlCount));
+    var startPos = 100;//Math.floor(Math.random() * (36777-crawlCount));
     this.api.get(env.API_HOST + "/towns?sort=-population&limit=" + crawlCount + "&start="+startPos, function(err, biggestTowns) {
         var townQueue = [],
             ndx;

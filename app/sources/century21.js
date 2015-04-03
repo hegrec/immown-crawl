@@ -16,7 +16,7 @@ function Century21(logger, tracker, redis) {
 
 Century21.prototype = Object.create(Base.prototype);
 
-Century21.prototype.getNeedleHeaders = function() {
+Century21.prototype.getHeaders = function() {
     var headers = {};
 
     headers['DNT'] = 1;
@@ -46,7 +46,7 @@ Century21.prototype.preScrape = function(cb) {
                 return cb(err, null);
             } else {
                 options = {
-                    headers: self.getNeedleHeaders()
+                    headers: self.getHeaders()
                 };
 
                 needle.get(autoCompleteUrl, options, function(err, res) {
@@ -61,9 +61,7 @@ Century21.prototype.preScrape = function(cb) {
                 });
             }
         },
-        headers: {
-            Cookie: self.cookieString
-        }
+        headers: self.getHeaders()
     });
 };
 
@@ -105,12 +103,12 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
         images = $('#listeFormatS').find('li>img'),
         price = $('section.tarif>span.yellow b'),
         options = {
-            headers: self.getNeedleHeaders()
+            headers: self.getHeaders()
         },
         agencyAjax = 'http://www.century21.fr/trouver_agence/agence_ajax/'
         + url.match(/\/detail\/([0-9]+\/)/)[1],
         agencyTelephoneBox = $('#numTelDiv').find('span.telAg').text().replace(/\s/g, ''),
-        townCode = $('#filAriane').find('>div:last a').text().trim().match(/\(([0-9]{5})\)/)[1],
+        townCode = $('#filAriane').find('>div:last-of-type a').text().trim().match(/\(([0-9]{5})\)/)[1],
 
         titleContainer = $('.h1_page').text().trim().toLowerCase(),
         otherDetails = [];
@@ -219,13 +217,12 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
                 self.logger.log("error",err);
                 return cb(err, null);
             } else {
-                var titleBox = $('div.box.W300.margR30>h4:first').text(),
-                    address = $('ul.coordonneesAgence>li:first').text(),
-                    agencyTownCode = $('ul.coordonneesAgence>li:last').text(),
+                var titleBox = $('div.box.W300.margR30>h4:first-of-type').text(),
+                    address = $('ul.coordonneesAgence>li:first-of-type').text(),
+                    agencyTownCode = $('ul.coordonneesAgence>li:last-of-type').text(),
                     siteSelector = $('div.arrow>h4>a'),
 
                     agencyWebsite;
-
                 agencyTownCode = agencyTownCode.match(/([0-9]{5})/)[1];
 
 
@@ -291,9 +288,7 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
 
             }
         },
-        headers: {
-            Cookie: self.cookieString
-        }
+        headers: self.getHeaders()
     });
 };
 

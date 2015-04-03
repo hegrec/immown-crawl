@@ -14,7 +14,6 @@ GuyHoquet.prototype = Object.create(Base.prototype);
 
 GuyHoquet.prototype.scrapeUrlPage = function (result, $, cb, rent) {
     var self = this,
-        baseURL = result.window.document._URL,
         nextPage = $('a.suiv.dd').attr('href');
 
     $("section#grid article.item").each(function(index,div){
@@ -26,7 +25,7 @@ GuyHoquet.prototype.scrapeUrlPage = function (result, $, cb, rent) {
         }
     });
 
-    if (nextPage && ++this.pages < 20) {
+    if (nextPage && ++this.pages < 50) {
         self.crawler.queue({
             uri: self.getURL()+nextPage,
             callback: function (err, response, $) {
