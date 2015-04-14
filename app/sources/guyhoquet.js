@@ -20,12 +20,12 @@ GuyHoquet.prototype.scrapeUrlPage = function (result, $, cb, rent) {
         var listingURL = $(div).find("a.partager").attr("data-url"),
             photos = $(div).find("a.img div.swiper-slide").length;
 
-        if (photos>=5) {
+        if (photos >= constants.MINIMUM_IMAGES) {
             self.listingUrls.push(listingURL);
         }
     });
 
-    if (nextPage && ++this.pages < 50) {
+    if (nextPage && ++this.pages < 100) {
         self.crawler.queue({
             uri: self.getURL()+nextPage,
             callback: function (err, response, $) {

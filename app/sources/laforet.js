@@ -41,7 +41,7 @@ LaForet.prototype.scrapeUrlPage = function (result, $, cb, rent) {
             jsonData = $li.data('json'),
             numPics = jsonData.picturesLetters.length;
 
-        if (!numPics || numPics<5) {
+        if (!numPics || numPics < constants.MINIMUM_IMAGES) {
             return;
         }
 

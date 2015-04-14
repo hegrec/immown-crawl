@@ -113,7 +113,7 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
         titleContainer = $('.h1_page').text().trim().toLowerCase(),
         otherDetails = [];
 
-    if (images.length < 5) {
+    if (images.length < constants.MINIMUM_IMAGES) {
         self.redis.hset(self.visitedHashKey, url, '1', function(err, result) {
             return callback(null, null);
         });

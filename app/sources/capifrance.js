@@ -92,7 +92,7 @@ CapiFrance.prototype.scrapeUrlPage = function (result, $, cb, rent, isAjax) {
             numPics = $li.find('div.details span.pictures').text().match(/[0-9]+/),
             listingURL = $li.find('a').attr('href');
 
-        if (!numPics || numPics[0]<5) {
+        if (!numPics || numPics[0] < constants.MINIMUM_IMAGES) {
             return;
         }
 
@@ -105,7 +105,7 @@ CapiFrance.prototype.scrapeUrlPage = function (result, $, cb, rent, isAjax) {
 
 
 
-    if (nextPage && ++this.pages < 50) {
+    if (nextPage && ++this.pages < 100) {
         self.crawler.queue({
             uri: self.initialUrl(this.pages),
             callback: function (err, response, $) {

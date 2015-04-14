@@ -192,9 +192,11 @@ Scraper.prototype.initialFetch = function (result, $, cb, rent) {
         if (rent) {
             rentalString = " rentals";
         }
-        self.logger.log(self.getScraperName() + ' ' + result.length + rentalString + ' for town '
-            + self.town.name + ' (' + self.town.code + ')');
 
+        if (result.length) {
+            self.logger.log(self.getScraperName() + ' ' + result.length + rentalString + ' for town '
+                + self.town.name + ' (' + self.town.code + ')');
+        }
         cb(null, result);
     };
 

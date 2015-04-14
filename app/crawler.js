@@ -65,7 +65,7 @@ Crawler.prototype.processSource = function processTown(source, cb) {
                 + encodeURIComponent(onlyAfterDate), function(err, listings) {
 
                 if (listings.meta.total < self.LISTINGS_PER_DAY) {
-                    self.logger.log('Scraping town ' + town.name + ' for ' + source.getScraperName());
+                    //self.logger.log('Scraping town ' + town.name + ' for ' + source.getScraperName());
                     source.scrape(town, cb);
                 } else {
                     cb(null, true);
