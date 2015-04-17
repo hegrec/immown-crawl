@@ -9,7 +9,7 @@ function Crawler(sources, logger, tracker) {
     this.tracker = tracker;
     this.towns = [];
     this.LISTINGS_PER_DAY = 50000;
-    this.LISTINGS_MAX = 80000;
+    this.LISTINGS_MAX = 100000;
     this.api = new Api(env.api.username, env.api.password);
 }
 
@@ -97,7 +97,7 @@ Crawler.prototype.processSource = function processTown(source, cb) {
 Crawler.prototype.crawl = function crawl(cb) {
 
     var self = this,
-        crawlCount = 100;
+        crawlCount = 250;
     self.callback = cb;
     this.tracker.event('crawler', 'crawler.start', function(err) {
 
@@ -125,6 +125,9 @@ Crawler.prototype.crawl = function crawl(cb) {
         self.api.get(env.API_HOST + "/listings?limit=1", function(err, listings) {
             if (listings.meta.total < self.LISTINGS_MAX) {
                 self.runCrawler();
+            } else {
+                self.logger.log(listings.meta.total + " listings above maximum " + self.LISTINGS_MAX);
+                process.exit();
             }
         });
     });
