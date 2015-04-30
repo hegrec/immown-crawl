@@ -245,6 +245,11 @@ Scraper.prototype.handleListings = function (listingUrls, isRental, cb) {
                             self.logger.log('error', err);
                             return cb(err, null);
                         } else if (listingModelData) {
+
+                            if (listingModelData.land_size && listingModelData.interior_size) {
+                                listingModelData.construction_type = constants.CONSTRUCTION_TYPE_HOUSE;
+                            }
+
                             self.saveNewListing(listingModelData, onProcessedListing);
                         } else {
                             cb(null, null);
