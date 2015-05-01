@@ -4,6 +4,6 @@ module.exports = {
     REDIS_PORT: 6379,
     api: {
         username: 'crawl',
-        password: 'crawl'
+        password: '23d23gsd'
     }
 };
