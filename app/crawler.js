@@ -8,7 +8,6 @@ function Crawler(sources, logger, tracker) {
     this.logger = logger;
     this.tracker = tracker;
     this.towns = [];
-    this.LISTINGS_PER_DAY = 50000;
     this.LISTINGS_MAX = 100000;
     this.api = new Api(env.api.username, env.api.password);
 }
@@ -21,27 +20,16 @@ Crawler.prototype.runCrawler = function run() {
 
     var onlyAfterDate = this.dateToAPIFormat(Date.now() - 86400000);
 
-    this.api.get(env.API_HOST + "/listings?limit=1&filter=createdAt>"
-        + encodeURIComponent(onlyAfterDate), function(err, listings) {
+    var tasks = [];
+    _.forOwn(self.sources, function (source) {
+        var task = function(cb) {
+            self.processSource(source, cb);
+        };
+        tasks.push(task);
+    });
 
-        if (listings.meta.total < self.LISTINGS_PER_DAY) {
-            //each source is processed at the same time
-            self.logger.log((self.LISTINGS_PER_DAY - listings.meta.total) + " listings to crawl");
-            var tasks = [];
-            _.forOwn(self.sources, function (source) {
-                var task = function(cb) {
-                    self.processSource(source, cb);
-                };
-                tasks.push(task);
-            });
-
-            async.parallel(tasks, function(err, result) {
-               self.callback(err, result);
-            });
-        } else {
-            self.logger.log('Already scraped ' + self.LISTINGS_PER_DAY + ' today...No crawl yet');
-            self.callback(null, true);
-        }
+    async.parallel(tasks, function(err, result) {
+       self.callback(err, result);
     });
 };
 
@@ -59,18 +47,7 @@ Crawler.prototype.processSource = function processTown(source, cb) {
     _.each(this.towns, function(town) {
 
         var task = function(cb) {
-            var onlyAfterDate = self.dateToAPIFormat(Date.now() - 86400000);
-
-            self.api.get(env.API_HOST + "/listings?limit=1&filter=createdAt>"
-                + encodeURIComponent(onlyAfterDate), function(err, listings) {
-
-                if (listings.meta.total < self.LISTINGS_PER_DAY) {
-                    //self.logger.log('Scraping town ' + town.name + ' for ' + source.getScraperName());
-                    source.scrape(town, cb);
-                } else {
-                    cb(null, true);
-                }
-            });
+            source.scrape(town, cb);
         };
 
         tasks.push(task);
