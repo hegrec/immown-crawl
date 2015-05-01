@@ -108,7 +108,7 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
         agencyAjax = 'http://www.century21.fr/trouver_agence/agence_ajax/'
         + url.match(/\/detail\/([0-9]+\/)/)[1],
         agencyTelephoneBox = $('#numTelDiv').find('span.telAg').text().replace(/\s/g, ''),
-        townCode = $('#filAriane').find('>div:last-of-type a').text().trim().match(/\(([0-9]{5})\)/)[1],
+        townCode = $('#filAriane').find('>div:last-of-type a').text().trim().match(/\(([0-9]{5})\)/),
 
         titleContainer = $('.h1_page').text().trim().toLowerCase(),
         otherDetails = [];
@@ -119,6 +119,11 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
         });
         return;
     }
+
+    if (townCode) {
+        townCode = townCode[1];
+    }
+
     price = price.text().replace(/\s/g, '');
     price = price.match("[0-9]+")[0];
     listingModel.listing_url = url;
@@ -225,6 +230,9 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
                     agencyWebsite;
                 agencyTownCode = agencyTownCode.match(/([0-9]{5})/)[1];
 
+                if (!townCode) {
+                    townCode = agencyTownCode;
+                }
 
                 if (siteSelector) {
                     agencyWebsite = siteSelector.attr('href');
