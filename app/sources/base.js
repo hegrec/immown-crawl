@@ -242,7 +242,6 @@ Scraper.prototype.handleListings = function (listingUrls, isRental, cb) {
                         var elapsed = nowTime - time;
                         self.tracker.timing('crawler', 'crawler.scrapeUrl', elapsed, listingUrl);
                         if (err) {
-
                             self.logger.log('error', err);
                             return cb(err, null);
                         } else if (listingModelData) {

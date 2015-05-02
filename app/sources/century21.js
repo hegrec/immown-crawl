@@ -100,11 +100,8 @@ Century21.prototype.getURL = function() {
 
 Century21.prototype.processListing = function (listingModel, $, url, rental, callback) {
     var self = this,
-        images = $('#listeFormatS').find('li>img'),
+        images = $('#galeriePIX').find('.fancybox>img'),
         price = $('section.tarif>span.yellow b'),
-        options = {
-            headers: self.getHeaders()
-        },
         agencyAjax = 'http://www.century21.fr/trouver_agence/agence_ajax/'
         + url.match(/\/detail\/([0-9]+\/)/)[1],
         agencyTelephoneBox = $('#numTelDiv').find('span.telAg').text().replace(/\s/g, ''),
@@ -128,7 +125,7 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
     price = price.match("[0-9]+")[0];
     listingModel.listing_url = url;
     listingModel.price = price;
-    listingModel.description = $('#descTextAnnonce').text().trim();
+    listingModel.description = $('.font16.LH19.justify').text().trim();
 
     images.each(function (index, img) {
 
@@ -254,7 +251,6 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
                             if (town == null) {
 
                                 err = 'Town with code ' + townCode + ' could not be found';
-                                self.logger.log('error', err);
                                 return cb(err);
 
                             } else {
@@ -273,13 +269,11 @@ Century21.prototype.processListing = function (listingModel, $, url, rental, cal
                         util.findTownByPostcode(agencyTownCode, function (err, town) {
 
                             if (err) {
-                                self.logger.log("error", err);
                                 return cb(err);
                             }
 
                             if (town == null) {
                                 err =  "Century21 agency address Town with code" + agencyTownCode + " could not be found";
-                                self.logger.log('error', err);
                                 return cb(err);
                             } else {
                                 listingModel.agency.TownId = town.id;

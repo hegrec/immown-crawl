@@ -15,10 +15,10 @@ function Application() {
     this.tracker = ua('UA-49102903-2', 'crawler', {strictCidFormat: false});
     this.redis = redis.createClient(env.REDIS_PORT, env.REDIS_ADDRESS);
     this.sources = {
-        //laforet: new LaForet(this.logger, this.tracker, this.redis),
-        //guyhoquet: new GuyHoquet(this.logger, this.tracker, this.redis),
+        laforet: new LaForet(this.logger, this.tracker, this.redis),
+        guyhoquet: new GuyHoquet(this.logger, this.tracker, this.redis),
         century21: new Century21(this.logger, this.tracker, this.redis),
-        //capifrance: new CapiFrance(this.logger, this.tracker, this.redis)
+        capifrance: new CapiFrance(this.logger, this.tracker, this.redis)
     }; 
 
     this.crawler = new Crawler(this.sources, this.logger, this.tracker);
@@ -29,7 +29,7 @@ function Application() {
  * start the applicatxion
  */
 Application.prototype.start = function start() {
-    this.crawl();
+    this.validate();
 };
 
 /**
