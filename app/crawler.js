@@ -8,7 +8,7 @@ function Crawler(sources, logger, tracker) {
     this.logger = logger;
     this.tracker = tracker;
     this.towns = [];
-    this.LISTINGS_MAX = 100000;
+    this.LISTINGS_MAX = 200000;
     this.api = new Api(env.api.username, env.api.password);
 }
 
