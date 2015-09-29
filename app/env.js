@@ -1,9 +1,9 @@
 module.exports = {
-    API_HOST: 'http://immown.com/api',
-    REDIS_ADDRESS: '127.0.0.1',
+    API_HOST: 'http://192.168.99.100:3001',
+    REDIS_ADDRESS: '192.168.99.100',
     REDIS_PORT: 6379,
     api: {
         username: 'crawl',
-        password: '23d23gsd'
+        password: 'crawl'
     }
 };

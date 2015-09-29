@@ -23,6 +23,6 @@ Your folder structure should look like this:
 1. Navigate to your immodispo-vm folder on your host machine
 2. <i>vagrant ssh</i> to connect to the VM
 3. <i>cd /vagrant/immodispo-crawl<i>
-4. <i>node app.js</i>
+4. <i>node index.js</i>
 5. The crawler will immediately start crawling the sites for data to upload to the datastore. 
 This data will immediately be available on the website (immodispo-web) if you have it running.

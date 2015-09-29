@@ -26,6 +26,10 @@ Validator.prototype.validate = function verifyData(next) {
 
     this.api.get(env.API_HOST + "/listings?limit=1&filter=updatedAt<"
         + encodeURIComponent(onlyAfterDate), function(err, listings) {
+        if (err) {
+            next(err);
+        }
+
         self.tracker.event('validator', 'validator.start', 'number to validate', listings.meta.total, function(err) {
 
         });
